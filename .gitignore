@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+front/
+# Environment Variables (የቦቱ ቁልፍ ሚስጥር ሆኖ እንዲያዝ)
+.env
+
+# Firebase Service Account File (የደህንነት ቁልፍህ)
+serviceAccountKey.json
+
+# Operating System Files
+.DS_Store
+Thumbs.db
