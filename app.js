@@ -70,71 +70,16 @@ bot.action('reception', (ctx) => {
   ctx.reply('📩 እባክዎን ጥያቄዎን ወይም አስተያየትዎን እዚህ ይጻፉልን። የሪሰፕሽን ክፍላችን አይቶ ወዲያውኑ ምላሽ ይሰጥዎታል።');
 });
 
-// ℹ️ ስለ እኛ (About Us)
-bot.action('about', async (ctx) => {
-  await ctx.answerCbQuery(); // የButton Loading አኒሜሽን ለማስቆም
-  
-  const aboutText = `
-✨ <b>እንኳን ወደ በይቱል-ዒልም የቁርኣን እና የኪታብ ማዕከል በሰላም መጡ!</b>
-
-📚 <b>ዓላማችን፡</b>
-የተከበረውን ቁርኣን እና የእስልምና እውቀቶችን (ኪታባትን) በጥራት፣ በግልፅነት እና በጥበብ ማስተማር ነው።
-
-📖 <b>የምንሰጣቸው ትምህርቶች፡</b>
-• <b>ቋይዳ (Qaida):</b> የቁርኣን ንባብ መመሪያ ለጀማሪዎች
-• <b>ቁርኣን (Quran):</b> ከተጅዊድ ህጎች ጋር ማቅራትና ማስሐፍ
-• <b>ኪታብ (Kitab):</b> የፊቅህ፣ የዐቂዳ እና የሐዲሥ ትምህርቶች
-
-📍 <b>አድራሻችን፡</b> አዲስ አበባ፣ ኢትዮጵያ
-📞 <b>ስልክ፡</b> +251913995878
-  `;
-
-  await ctx.reply(aboutText, { 
-    parse_mode: 'HTML',
-    ...Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]
-    ])
-  });
+// ስለ እኛ
+bot.action('about', (ctx) => {
+  ctx.reply('ይህ ቦት ለተጠቃሚዎች የተዘጋጀ የሪሰፕሽን እና የሬጅስትሬሽን አገልግሎት መስጫ ነው።');
 });
 
-// ❓ እርዳታ (Help)
-bot.action('help', async (ctx) => {
-  await ctx.answerCbQuery();
-  
-  const helpText = `
-❓ <b>የቦቱ አጠቃቀም መመሪያ</b>
-
-1️⃣ <b>📋 ሬጅስትሬሽን (Registration)፦</b> 
-የምዝገባ ፎርሙን በመሙላት የአዲስ ተማሪነት ምዝገባ ለማጠናቀቅ ይጠቀሙበት።
-
-2️⃣ <b>📞 ሪሰፕሽን (Reception)፦</b> 
-ማንኛውም ጥያቄ፣ አስተያየት ወይም ቅሬታ ካልዎት እዚህ ላይ ይፃፉልን። የሪሰፕሽን ክፍላችን በቀጥታ ምላሽ ይሰጥዎታል።
-
-3️⃣ <b>ℹ️ ስለ እኛ (About Us)፦</b> 
-ስለ ማዕከላችን አጠቃላይ መረጃ እና የምንሰጣቸውን ትምህርቶች ለማወቅ።
-
-⚠️ <i>ችግር ካጋጠመዎት በሪሰፕሽን በኩል መልዕክት መላክ ይችላሉ!</i>
-  `;
-
-  await ctx.reply(helpText, { 
-    parse_mode: 'HTML',
-    ...Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]
-    ])
-  });
+// እርዳታ
+bot.action('help', (ctx) => {
+  ctx.reply('እርዳታ ከፈለጉ ከታች ያሉትን ቁልፎች በመጠቀም ማግኘት ይችላሉ።');
 });
-// 🔄 ወደ ዋናው ሜኑ ለመመለስ (Back to Main Menu)
-bot.action('main_menu', async (ctx) => {
-  await ctx.answerCbQuery();
-  await ctx.reply(
-    'እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
-    Markup.inlineKeyboard([
-      [Markup.button.webApp('📋 ሬጅስትሬሽን (Registration)', 'https://beytulelmbot.netlify.app/register')],
-      [Markup.button.callback('📞 ሪሰፕሽን (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
-      [Markup.button.callback('❓ እርዳታ', 'help')]
-    ])
-  );
-});
+
 // ማንኛውንም የጽሁፍ መልዕክት የማስተናገጃ ኮድ
 bot.on('text', async (ctx) => {
   const userId = ctx.from.id;
