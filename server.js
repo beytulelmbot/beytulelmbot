@@ -21,7 +21,7 @@ const userSessions = {};
 // Start Command
 bot.start((ctx) => {
   ctx.reply(
-    'ሰላም! ወደ ቤተ-እልም እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
+    'ሰላም! ወደ ቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
     Markup.inlineKeyboard([
       [Markup.button.webApp('📋 ሬጅስትሬሽን (Registration)', 'https://beytulelmbot.netlify.app/register')],
       [Markup.button.callback('📞 ሪሰፕሽን (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
@@ -72,21 +72,32 @@ bot.action('reception', (ctx) => {
 
 // ℹ️ ስለ እኛ (About Us)
 bot.action('about', async (ctx) => {
-  await ctx.answerCbQuery(); // የButton Loading አኒሜሽን ለማስቆም
+  await ctx.answerCbQuery();
   
   const aboutText = `
-✨ <b>እንኳን ወደ በይቱል-ዒልም የቁርኣን እና የኪታብ ማዕከል በሰላም መጡ!</b>
+✨ <b>የቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል</b>
 
-📚 <b>ዓላማችን፡</b>
-የተከበረውን ቁርኣን እና የእስልምና እውቀቶችን (ኪታባትን) በጥራት፣ በግልፅነት እና በጥበብ ማስተማር ነው።
+👁‍🗨 <b>ራዕይ (Vision)፦</b>
+በ2028 በዓለም ዙሪያ ለሚገኙ ኢትዮጵያውያን ሙስሊሞች አለኝታ በመሆን፤ የቁርኣን እና የተርቢያ ትምህርቶችን ኦንላይን የሚያደርስ መሪ ማዕከል መሆን!
 
-📖 <b>የምንሰጣቸው ትምህርቶች፡</b>
-• <b>ቋይዳ (Qaida):</b> የቁርኣን ንባብ መመሪያ ለጀማሪዎች
-• <b>ቁርኣን (Quran):</b> ከተጅዊድ ህጎች ጋር ማቅራትና ማስሐፍ
-• <b>ኪታብ (Kitab):</b> የፊቅህ፣ የዐቂዳ እና የሐዲሥ ትምህርቶች
+🎯 <b>ተልዕኮ (Mission)፦</b>
+ሙስሊሞችን በቁርኣን፣ በሱና እና በተርቢያ በማስተማር፤ በእማን፣ እውቀትና እኽላቅ የተሞላ ትውልድ በመፍጠር የአላህን ቃል በሕይወታቸው እንዲተገብሩ መርዳት።
 
-📍 <b>አድራሻችን፡</b> አዲስ አበባ፣ ኢትዮጵያ
-📞 <b>ስልክ፡</b> +251913995878
+⭐ <b>እሴቶች (Core Values)፦</b>
+• <b>ኢማን (Iman)</b>
+• <b>እውቀት (Ilm)</b>
+• <b>እኽላቅ (Akhlaq)</b>
+• <b>ታማኝነት (Amanah)</b>
+• <b>ትብብር (Ta'awun)</b>
+
+📖 <b>ተግባራት (Programs & Services)፦</b>
+• የቁርኣን ትምህርት (Hifz & Tajweed)
+• የተርቢያና የእኽላቅ ሥልጠና
+• የተለያዩ የኪታብ ዓይነቶች ትምህርት
+• የኦንላይን የቤተሰብ ትምህርት
+• የተፍሲር እና የኸጥ ትምህርት
+
+🌐 <i>የቁርኣንና የተርቢያ ትምህርት ለሁሉም ሙስሊሞች በኦንላይን!</i>
   `;
 
   await ctx.reply(aboutText, { 
@@ -96,7 +107,6 @@ bot.action('about', async (ctx) => {
     ])
   });
 });
-
 // ❓ እርዳታ (Help)
 bot.action('help', async (ctx) => {
   await ctx.answerCbQuery();
