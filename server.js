@@ -64,3 +64,14 @@ console.log('ቦቱ ሜኑ እና ሲስተም ይዞ በመስራት ላይ ነ
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+// Render Port እንዲያገኝ የሚያደርግ Dummy Server
+const http = require('http');
+const port = process.env.PORT || 3000;
+
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Beytul Elm Bot is running fine!\n');
+}).listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
