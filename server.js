@@ -1,19 +1,24 @@
 const { Telegraf, Markup } = require('telegraf');
-// firebase-admin v12+ ላይ አዲሱ import አጻጻፍ፡
 const admin = require("firebase-admin");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-// Firebase Initialization
+
 initializeApp({
   credential: cert(serviceAccount)
 });
 
 const db = getFirestore();
-
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
+// የእርስዎ የግል Telegram ID (መረጃዎችና ጥያቄዎች የሚመጡበት)
+const ADMIN_CHAT_ID = "8791540989"; 
+
+// የተጠቃሚዎችን የሪሰፕሽን ሁኔታ (State) ለመያዝ
+const userSessions = {};
+
+// Start Command
 bot.start((ctx) => {
   ctx.reply(
     'ሰላም! ወደ ቤተ-እልም እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
@@ -25,6 +30,7 @@ bot.start((ctx) => {
   );
 });
 
+// WebApp Registration Data handling
 bot.on('web-app-data', async (ctx) => {
   try {
     const data = JSON.parse(ctx.webAppData.data);
@@ -35,30 +41,84 @@ bot.on('web-app-data', async (ctx) => {
       address: data.address,
       course: data.course,
       telegramId: ctx.from.id,
-      registeredAt: new Date() // registerdAt የሚለውን የፊደል ስህተት አስተካክለውታል
+      registeredAt: new Date()
     });
 
-    // የተስተካከለ Backtick (`) አጠቃቀም ለ Template Literal
+    // ለተማሪው የሚላክ የማረጋገጫ መልዕክት
     await ctx.reply(`Dear ${data.fullName}, you have registered successfully. Congratulations on joining Beytul-Elm!`);
+
+    // ለAdmin/Reception የሚላክ ማስታወቂያ
+    await bot.telegram.sendMessage(ADMIN_CHAT_ID, 
+      `🆕 <b>አዲስ የተማሪ ምዝገባ!</b>\n\n` +
+      `👤 <b>ስም:</b> ${data.fullName}\n` +
+      `📞 <b>ስልክ:</b> ${data.phone}\n` +
+      `📍 <b>አድራሻ:</b> ${data.address}\n` +
+      `📚 <b>ትምህርት:</b> ${data.course}\n` +
+      `🆔 <b>Telegram ID:</b> ${ctx.from.id}`,
+      { parse_mode: 'HTML' }
+    );
+
   } catch (error) {
     console.error('Firestore Error: ', error);
     await ctx.reply('Sorry, could not register at the moment. Please try again!');
   }
 });
 
-// የሪሰፕሽን (Reception) አገልግሎት
-
+// የሪሰፕሽን (Reception) ቁልፍ ሲጫን
 bot.action('reception', (ctx) => {
-  ctx.reply('እንኳን ወደ ሪሰፕሽን በሰላም መጡ። ማንኛውንም ጥያቄዎን ወይም አስተያየትዎን መጻፍ ይችላሉ፣ ሃላፊዎቻችን ምላሽ ይሰጡዎታል።');
+  userSessions[ctx.from.id] = 'WAITING_FOR_RECEPTION_MSG';
+  ctx.reply('📩 እባክዎን ጥያቄዎን ወይም አስተያየትዎን እዚህ ይጻፉልን። የሪሰፕሽን ክፍላችን አይቶ ወዲያውኑ ምላሽ ይሰጥዎታል።');
 });
+
 // ስለ እኛ
 bot.action('about', (ctx) => {
   ctx.reply('ይህ ቦት ለተጠቃሚዎች የተዘጋጀ የሪሰፕሽን እና የሬጅስትሬሽን አገልግሎት መስጫ ነው።');
 });
 
+// እርዳታ
 bot.action('help', (ctx) => {
   ctx.reply('እርዳታ ከፈለጉ ከታች ያሉትን ቁልፎች በመጠቀም ማግኘት ይችላሉ።');
 });
+
+// ማንኛውንም የጽሁፍ መልዕክት የማስተናገጃ ኮድ
+bot.on('text', async (ctx) => {
+  const userId = ctx.from.id;
+
+  // 1. ተጠቃሚው ለሪሰፕሽን የጻፈው መልዕክት ከሆነ
+  if (userSessions[userId] === 'WAITING_FOR_RECEPTION_MSG') {
+    delete userSessions[userId]; // ሴሽኑን ማፅዳት
+
+    // ለተጠቃሚው ምላሽ መስጠት
+    await ctx.reply('ቀጥታ ለሪሰፕሽን ደርሷል! አጭር ጊዜ ውስጥ ምላሽ እንሰጥዎታለን። አመሰግናለሁ!');
+
+    // መልዕክቱን ቀጥታ ወደ Admin/Reception መላክ
+    await bot.telegram.sendMessage(ADMIN_CHAT_ID,
+      `📩 <b>አዲስ የሪሰፕሽን መልዕክት!</b>\n\n` +
+      `👤 <b>ላኪ:</b> ${ctx.from.first_name} (@${ctx.from.username || 'NoUsername'})\n` +
+      `🆔 <b>ID:</b> <code>${userId}</code>\n\n` +
+      `💬 <b>መልዕክት:</b>\n${ctx.message.text}`,
+      { parse_mode: 'HTML' }
+    );
+    return;
+  }
+
+  // 2. Admin ከተጠቃሚዎች ለቀረቡ ጥያቄዎች Reply ሲያደርግ (Admin reply to user)
+  if (userId.toString() === ADMIN_CHAT_ID && ctx.message.reply_to_message) {
+    const replyText = ctx.message.reply_to_message.text;
+    const match = replyText && replyText.match(/ID:\s*(\d+)/);
+
+    if (match) {
+      const targetUserId = match[1];
+      try {
+        await bot.telegram.sendMessage(targetUserId, `📩 <b>ከሪሰፕሽን የተላከ ምላሽ:</b>\n\n${ctx.message.text}`, { parse_mode: 'HTML' });
+        await ctx.reply('✅ ምላሽዎ ለተጠቃሚው ተልኳል።');
+      } catch (err) {
+        await ctx.reply('❌ መልዕክቱን መላክ አልተቻለም። ተጠቃሚው ቦቱን አግዶት ሊሆን ይችላል።');
+      }
+    }
+  }
+});
+
 bot.launch();
 console.log('ቦቱ ሜኑ እና ሲስተም ይዞ በመስራት ላይ ነው...');
 
