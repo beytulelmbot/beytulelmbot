@@ -4,8 +4,7 @@ const admin = require("firebase-admin");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 
-const serviceAccount = require('./serviceAccountKey.json');
-
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 // Firebase Initialization
 initializeApp({
   credential: cert(serviceAccount)
@@ -15,15 +14,14 @@ const db = getFirestore();
 
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-// ተጠቃሚው /start ሲል ዋናውን ሜኑ ማሳየት
 bot.start((ctx) => {
   ctx.reply(
     'ሰላም! ወደ ቤተ-እልም እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
-    Markup.keyboard([
+    Markup.inlineKeyboard([
       [Markup.button.webApp('📋 ሬጅስትሬሽን (Registration)', 'https://beytulelmbot.netlify.app/register')],
-      ['📞 ሪሰፕሽን (Reception)', 'ℹ️ ስለ እኛ'],
-      ['❓ እርዳታ']
-    ]).resize()
+      [Markup.button.callback('📞 ሪሰፕሽን (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
+      [Markup.button.callback('❓ እርዳታ', 'help')]
+    ])
   );
 });
 
@@ -49,20 +47,18 @@ bot.on('web-app-data', async (ctx) => {
 });
 
 // የሪሰፕሽን (Reception) አገልግሎት
-bot.hears('📞 ሪሰፕሽን (Reception)', (ctx) => {
+
+bot.action('reception', (ctx) => {
   ctx.reply('እንኳን ወደ ሪሰፕሽን በሰላም መጡ። ማንኛውንም ጥያቄዎን ወይም አስተያየትዎን መጻፍ ይችላሉ፣ ሃላፊዎቻችን ምላሽ ይሰጡዎታል።');
 });
-
 // ስለ እኛ
-bot.hears('ℹ️ ስለ እኛ', (ctx) => {
+bot.action('about', (ctx) => {
   ctx.reply('ይህ ቦት ለተጠቃሚዎች የተዘጋጀ የሪሰፕሽን እና የሬጅስትሬሽን አገልግሎት መስጫ ነው።');
 });
 
-// እርዳታ
-bot.hears('❓ እርዳታ', (ctx) => {
+bot.action('help', (ctx) => {
   ctx.reply('እርዳታ ከፈለጉ ከታች ያሉትን ቁልፎች በመጠቀም ማግኘት ይችላሉ።');
 });
-
 bot.launch();
 console.log('ቦቱ ሜኑ እና ሲስተም ይዞ በመስራት ላይ ነው...');
 
