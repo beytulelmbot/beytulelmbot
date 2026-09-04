@@ -19,10 +19,10 @@ const userSessions = {};
 // 1. Start Command
 bot.start((ctx) => {
   ctx.reply(
-    'ሰላም! ወደ ቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
+    'ሰላም! ወደ በይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
     Markup.inlineKeyboard([
-      [Markup.button.webApp('📋 ሬጅስትሬሽን (Registration)', 'https://beytulelmbot.netlify.app/register')],
-      [Markup.button.callback('📞 ሪሰፕሽን (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
+      [Markup.button.webApp('📋 ምዝገባ (Registration)', 'https://beytulelmbot.netlify.app/register')],
+      [Markup.button.callback('📞 እንግዳ ተቀባይ (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
       [Markup.button.callback('❓ እርዳታ', 'help')]
     ])
   );
@@ -68,7 +68,7 @@ bot.action('reception', (ctx) => {
 bot.action('about', async (ctx) => {
   await ctx.answerCbQuery();
   const aboutText = `
-✨ <b>የቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል</b>
+✨ <b>የበይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል</b>
 
 👁‍🗨 <b>ራዕይ (Vision)፦</b>
 በ2028 በዓለም ዙሪያ ለሚገኙ ኢትዮጵያውያን ሙስሊሞች አለኝታ በመሆን፤ የቁርኣን እና የተርቢያ ትምህርቶችን ኦንላይን የሚያደርስ መሪ ማዕከል መሆን!
@@ -102,10 +102,10 @@ bot.action('help', async (ctx) => {
   const helpText = `
 ❓ <b>የቦቱ አጠቃቀም መመሪያ</b>
 
-1️⃣ <b>📋 ሬጅስትሬሽን (Registration)፦</b> 
+1️⃣ <b>📋 ምዝገባ (Registration)፦</b> 
 የምዝገባ ፎርሙን በመሙላት የአዲስ ተማሪነት ምዝገባ ለማጠናቀቅ ይጠቀሙበት።
 
-2️⃣ <b>📞 ሪሰፕሽን (Reception)፦</b> 
+2️⃣ <b>📞 እንግዳ ተቀባይ (Reception)፦</b> 
 ማንኛውም ጥያቄ፣ አስተያየት ወይም ቅሬታ ካልዎት እዚህ ላይ ይፃፉልን። የሪሰፕሽን ክፍላችን በቀጥታ ምላሽ ይሰጥዎታል።
 
 3️⃣ <b>ℹ️ ስለ እኛ (About Us)፦</b> 
@@ -123,8 +123,8 @@ bot.action('main_menu', async (ctx) => {
   await ctx.reply(
     'እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
     Markup.inlineKeyboard([
-      [Markup.button.webApp('📋 ሬጅስትሬሽን (Registration)', 'https://beytulelmbot.netlify.app/register')],
-      [Markup.button.callback('📞 ሪሰፕሽን (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
+      [Markup.button.webApp('📋 ምዝገባ (Registration)', 'https://beytulelmbot.netlify.app/register')],
+      [Markup.button.callback('📞 እንግዳ ተቀባይ (Reception)', 'reception'), Markup.button.callback('ℹ️ ስለ እኛ', 'about')],
       [Markup.button.callback('❓ እርዳታ', 'help')]
     ])
   );
