@@ -2,9 +2,10 @@ const { Telegraf, Markup } = require('telegraf');
 const admin = require("firebase-admin");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
+const http = require('http');
 
+// Firebase Initialization
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
 initializeApp({
   credential: cert(serviceAccount)
 });
@@ -12,13 +13,10 @@ initializeApp({
 const db = getFirestore();
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-// የእርስዎ የግል Telegram ID (መረጃዎችና ጥያቄዎች የሚመጡበት)
 const ADMIN_CHAT_ID = "8791540989"; 
-
-// የተጠቃሚዎችን የሪሰፕሽን ሁኔታ (State) ለመያዝ
 const userSessions = {};
 
-// Start Command
+// 1. Start Command
 bot.start((ctx) => {
   ctx.reply(
     'ሰላም! ወደ ቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል እንኳን ደህና መጡ። እባክዎ ከታች ከሚገኙት አማራጮች አንዱን ይምረጡ፡',
@@ -30,7 +28,7 @@ bot.start((ctx) => {
   );
 });
 
-// WebApp Registration Data handling
+// 2. WebApp Registration
 bot.on('web-app-data', async (ctx) => {
   try {
     const data = JSON.parse(ctx.webAppData.data);
@@ -44,10 +42,8 @@ bot.on('web-app-data', async (ctx) => {
       registeredAt: new Date()
     });
 
-    // ለተማሪው የሚላክ የማረጋገጫ መልዕክት
     await ctx.reply(`Dear ${data.fullName}, you have registered successfully. Congratulations on joining Beytul-Elm!`);
 
-    // ለAdmin/Reception የሚላክ ማስታወቂያ
     await bot.telegram.sendMessage(ADMIN_CHAT_ID, 
       `🆕 <b>አዲስ የተማሪ ምዝገባ!</b>\n\n` +
       `👤 <b>ስም:</b> ${data.fullName}\n` +
@@ -57,23 +53,20 @@ bot.on('web-app-data', async (ctx) => {
       `🆔 <b>Telegram ID:</b> ${ctx.from.id}`,
       { parse_mode: 'HTML' }
     );
-
   } catch (error) {
     console.error('Firestore Error: ', error);
     await ctx.reply('Sorry, could not register at the moment. Please try again!');
   }
 });
 
-// የሪሰፕሽን (Reception) ቁልፍ ሲጫን
+// 3. Actions
 bot.action('reception', (ctx) => {
   userSessions[ctx.from.id] = 'WAITING_FOR_RECEPTION_MSG';
   ctx.reply('📩 እባክዎን ጥያቄዎን ወይም አስተያየትዎን እዚህ ይጻፉልን። የሪሰፕሽን ክፍላችን አይቶ ወዲያውኑ ምላሽ ይሰጥዎታል።');
 });
 
-// ℹ️ ስለ እኛ (About Us)
 bot.action('about', async (ctx) => {
   await ctx.answerCbQuery();
-  
   const aboutText = `
 ✨ <b>የቤይቱል-ዒልም የቁርኣን እና የተርቢያ ማዕከል</b>
 
@@ -96,21 +89,16 @@ bot.action('about', async (ctx) => {
 • የተለያዩ የኪታብ ዓይነቶች ትምህርት
 • የኦንላይን የቤተሰብ ትምህርት
 • የተፍሲር እና የኸጥ ትምህርት
-
-🌐 <i>የቁርኣንና የተርቢያ ትምህርት ለሁሉም ሙስሊሞች በኦንላይን!</i>
   `;
 
   await ctx.reply(aboutText, { 
     parse_mode: 'HTML',
-    ...Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]
-    ])
+    ...Markup.inlineKeyboard([[Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]])
   });
 });
-// ❓ እርዳታ (Help)
+
 bot.action('help', async (ctx) => {
   await ctx.answerCbQuery();
-  
   const helpText = `
 ❓ <b>የቦቱ አጠቃቀም መመሪያ</b>
 
@@ -122,18 +110,14 @@ bot.action('help', async (ctx) => {
 
 3️⃣ <b>ℹ️ ስለ እኛ (About Us)፦</b> 
 ስለ ማዕከላችን አጠቃላይ መረጃ እና የምንሰጣቸውን ትምህርቶች ለማወቅ።
-
-⚠️ <i>ችግር ካጋጠመዎት በሪሰፕሽን በኩል መልዕክት መላክ ይችላሉ!</i>
   `;
 
   await ctx.reply(helpText, { 
     parse_mode: 'HTML',
-    ...Markup.inlineKeyboard([
-      [Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]
-    ])
+    ...Markup.inlineKeyboard([[Markup.button.callback('⬅️ ወደ ዋናው ሜኑ', 'main_menu')]])
   });
 });
-// 🔄 ወደ ዋናው ሜኑ ለመመለስ (Back to Main Menu)
+
 bot.action('main_menu', async (ctx) => {
   await ctx.answerCbQuery();
   await ctx.reply(
@@ -145,18 +129,15 @@ bot.action('main_menu', async (ctx) => {
     ])
   );
 });
-// ማንኛውንም የጽሁፍ መልዕክት የማስተናገጃ ኮድ
+
+// 4. Text Messages & Admin Reply
 bot.on('text', async (ctx) => {
   const userId = ctx.from.id;
 
-  // 1. ተጠቃሚው ለሪሰፕሽን የጻፈው መልዕክት ከሆነ
   if (userSessions[userId] === 'WAITING_FOR_RECEPTION_MSG') {
-    delete userSessions[userId]; // ሴሽኑን ማፅዳት
-
-    // ለተጠቃሚው ምላሽ መስጠት
+    delete userSessions[userId];
     await ctx.reply('ቀጥታ ለሪሰፕሽን ደርሷል! አጭር ጊዜ ውስጥ ምላሽ እንሰጥዎታለን። አመሰግናለሁ!');
 
-    // መልዕክቱን ቀጥታ ወደ Admin/Reception መላክ
     await bot.telegram.sendMessage(ADMIN_CHAT_ID,
       `📩 <b>አዲስ የሪሰፕሽን መልዕክት!</b>\n\n` +
       `👤 <b>ላኪ:</b> ${ctx.from.first_name} (@${ctx.from.username || 'NoUsername'})\n` +
@@ -167,7 +148,6 @@ bot.on('text', async (ctx) => {
     return;
   }
 
-  // 2. Admin ከተጠቃሚዎች ለቀረቡ ጥያቄዎች Reply ሲያደርግ (Admin reply to user)
   if (userId.toString() === ADMIN_CHAT_ID && ctx.message.reply_to_message) {
     const replyText = ctx.message.reply_to_message.text;
     const match = replyText && replyText.match(/ID:\s*(\d+)/);
@@ -184,19 +164,32 @@ bot.on('text', async (ctx) => {
   }
 });
 
-bot.launch();
-console.log('ቦቱ ሜኑ እና ሲስተም ይዞ በመስራት ላይ ነው...');
+// Bot Start
+bot.launch().then(() => console.log('Telegram Bot successfully started!'));
+
+// Render Health Check & Keeping Alive
+const PORT = process.env.PORT || 3000;
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Beytul Elm Bot is active 24/7!\n');
+});
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  
+  // Render እንዳይተኛ (Sleep እንዳያደርግ) በየ14 ደቂቃው ራሱን Ping የሚያደርግ
+  if (RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+      http.get(RENDER_EXTERNAL_URL, (res) => {
+        console.log(`Self-ping response: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('Self-ping error:', err.message);
+      });
+    }, 14 * 60 * 1000); // Every 14 minutes
+  }
+});
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
-
-// Render Port እንዲያገኝ የሚያደርግ Dummy Server
-const http = require('http');
-const port = process.env.PORT || 3000;
-
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Beytul Elm Bot is running fine!\n');
-}).listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
